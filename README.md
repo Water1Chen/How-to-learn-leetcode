@@ -8,8 +8,13 @@
 ## 快速开始
 
 1. **刷题系统**: 浏览器打开 `review.html` → 按分类筛选 → 写代码 → 通过/不通过
+
+   ![index](./images/index.png)
+
 2. **Python 运行**: `cd solutions/分类名 && python 文件名.py`
-3. **方法论**: 阅读 `methodology.md` 学习审题框架
+
+3. **方法论**: 阅读 `methodology.md` 学习[审题框架](methodology.md)
+
 4. **题目索引**: 本文件下方按分类浏览
 
 ---
