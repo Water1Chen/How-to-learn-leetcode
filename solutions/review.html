@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeetCode Hot 100 — 间隔重复刷题</title>
+<style>
+:root {
+  --bg: #1e1e2e;
+  --surface: #282840;
+  --surface2: #32325a;
+  --text: #cdd6f4;
+  --text2: #a6adc8;
+  --green: #a6e3a1;
+  --red: #f38ba8;
+  --blue: #89b4fa;
+  --yellow: #f9e2af;
+  --purple: #cba6f7;
+  --border: #45475a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+header { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+header h1 { font-size:18px; font-weight:600; }
+.stats { display:flex; gap:16px; flex-wrap:wrap; }
+.stat { font-size:13px; color:var(--text2); }
+.stat span { color:var(--blue); font-weight:700; }
+main { max-width:900px; margin:0 auto; padding:24px; }
+.problem-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:16px; }
+.problem-header { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+.problem-number { font-size:13px; color:var(--text2); }
+.problem-title { font-size:20px; font-weight:700; }
+.difficulty { font-size:12px; padding:3px 10px; border-radius:12px; font-weight:600; }
+.diff-easy { background:#a6e3a11a; color:var(--green); }
+.diff-medium { background:#f9e2af1a; color:var(--yellow); }
+.diff-hard { background:#f38ba81a; color:var(--red); }
+.tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.tag { font-size:11px; padding:2px 8px; border-radius:8px; background:var(--surface2); color:var(--purple); }
+.problem-desc { font-size:14px; color:var(--text2); line-height:1.6; margin-bottom:20px; }
+.example { background:var(--surface2); border-radius:8px; padding:12px 16px; margin-bottom:20px; font-size:13px; color:var(--text2); }
+.example strong { color:var(--text); }
+.progress-info { font-size:13px; color:var(--text2); margin-bottom:16px; }
+.progress-info span { color:var(--blue); }
+.editor-label { font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text2); }
+.editor-wrap { position:relative; margin-bottom:16px; }
+.editor-wrap textarea {
+  width:100%; min-height:200px; background:var(--bg); color:var(--green);
+  border:1px solid var(--border); border-radius:8px; padding:16px;
+  font-family:'Cascadia Code','Fira Code','JetBrains Mono',Consolas,monospace;
+  font-size:14px; line-height:1.6; resize:vertical; tab-size:4;
+}
+.editor-wrap textarea:focus { outline:none; border-color:var(--blue); }
+.actions { display:flex; gap:12px; flex-wrap:wrap; }
+.btn { padding:10px 24px; border-radius:8px; border:none; font-size:14px; font-weight:600; cursor:pointer; transition:all .2s; }
+.btn-pass { background:var(--green); color:#1e1e2e; }
+.btn-pass:hover { opacity:.85; }
+.btn-fail { background:var(--red); color:#1e1e2e; }
+.btn-fail:hover { opacity:.85; }
+.btn-solution { background:var(--surface2); color:var(--blue); border:1px solid var(--blue); }
+.btn-solution:hover { background:var(--blue); color:var(--bg); }
+.solution-panel { display:none; margin-top:16px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:16px; }
+.solution-panel.show { display:block; }
+.solution-panel pre { font-family:'Cascadia Code',Consolas,monospace; font-size:13px; line-height:1.5; color:var(--green); overflow-x:auto; white-space:pre-wrap; }
+.solution-panel h3 { font-size:14px; color:var(--blue); margin-bottom:8px; }
+.empty-state { text-align:center; padding:80px 24px; }
+.empty-state h2 { font-size:28px; color:var(--green); margin-bottom:12px; }
+.empty-state p { color:var(--text2); font-size:16px; margin-bottom:8px; }
+.empty-state .btn { margin-top:20px; }
+.history { margin-top:24px; }
+.history h3 { font-size:14px; color:var(--text2); margin-bottom:8px; }
+.history-item { font-size:12px; color:var(--text2); padding:4px 0; }
+.category-filter { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.cat-chip { font-size:12px; padding:4px 12px; border-radius:14px; border:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; }
+.cat-chip.active { background:var(--blue); color:var(--bg); border-color:var(--blue); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>LeetCode Hot 100 间隔重复刷题</h1>
+  <div class="stats">
+    <div class="stat">已掌握 <span id="stat-mastered">0</span>/100</div>
+    <div class="stat">今日通过 <span id="stat-today">0</span></div>
+    <div class="stat">总通过 <span id="stat-total">0</span> 次</div>
+  </div>
+</header>
+
+<main>
+  <div class="category-filter" id="category-filter"></div>
+
+  <div id="empty-state" class="empty-state">
+    <h2>今天全部刷完了！</h2>
+    <p>你已经掌握了所有今天可练习的题目</p>
+    <p style="color:var(--text2)">明天再来，或者回顾已掌握的题目</p>
+    <button class="btn btn-solution" onclick="resetProgress()">重置进度</button>
+  </div>
+
+  <div id="problem-area" style="display:none;">
+    <div class="problem-card">
+      <div class="problem-header">
+        <span class="problem-number" id="prob-number"></span>
+        <span class="problem-title" id="prob-title"></span>
+        <span class="difficulty" id="prob-diff"></span>
+      </div>
+      <div class="tags" id="prob-tags"></div>
+      <div class="progress-info" id="prob-progress"></div>
+      <div class="problem-desc" id="prob-desc"></div>
+      <div class="example" id="prob-example"></div>
+
+      <div class="editor-label">代码编辑器</div>
+      <div class="editor-wrap">
+        <textarea id="code-editor" placeholder="# 在这里编写你的代码...&#10;# 按 Tab 键缩进&#10;# 写完后点击"通过了"确认答案正确"></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-pass" onclick="handlePass()">通过了</button>
+        <button class="btn btn-fail" onclick="handleFail()">没通过，看题解</button>
+      </div>
+
+      <div class="solution-panel" id="solution-panel">
+        <h3>暴力解法</h3>
+        <pre id="solution-brute"></pre>
+        <h3 style="margin-top:12px;">最优解法</h3>
+        <pre id="solution-optimal"></pre>
+      </div>
+    </div>
+
+    <div class="history" id="history-section">
+      <h3>今日记录</h3>
+      <div id="history-list"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ==================== 问题数据 ====================
+const PROBLEMS = [
+  // ===== 01 哈希 =====
+  {id:'01-01',cat:'01-hash',title:'两数之和',en:'Two Sum',diff:'easy',lc:1,desc:'给定整数数组 nums 和目标值 target，找出和为目标值的两个数的索引。假设只有一个答案，同一元素不能使用两次。',example:'输入: nums=[2,7,11,15], target=9 → 输出: [0,1]',hint:'HashMap O(n) 查找'},
+  {id:'01-02',cat:'01-hash',title:'字母异位词分组',en:'Group Anagrams',diff:'medium',lc:49,desc:'给定字符串数组，将字母异位词（相同字母重排）分到同一组。',example:'输入: ["eat","tea","tan","ate","nat","bat"] → 输出: [["bat"],["nat","tan"],["ate","eat","tea"]]',hint:'字符计数作签名'},
+  {id:'01-03',cat:'01-hash',title:'最长连续序列',en:'Longest Consecutive Sequence',diff:'medium',lc:128,desc:'给定未排序整数数组，找出最长连续序列的长度。要求 O(n)。',example:'输入: [100,4,200,1,3,2] → 输出: 4 (序列 [1,2,3,4])',hint:'只从序列起点扩展'},
+
+  // ===== 02 双指针 =====
+  {id:'02-01',cat:'02-two-pointers',title:'移动零',en:'Move Zeroes',diff:'easy',lc:283,desc:'将所有 0 移动到数组末尾，保持非零元素相对顺序。必须原地操作。',example:'输入: [0,1,0,3,12] → 输出: [1,3,12,0,0]',hint:'同向双指针交换'},
+  {id:'02-02',cat:'02-two-pointers',title:'盛最多水的容器',en:'Container With Most Water',diff:'medium',lc:11,desc:'n 个非负整数代表柱子高度，找两条线与 x 轴围成容器能装最多水。',example:'输入: [1,8,6,2,5,4,8,3,7] → 输出: 49',hint:'两端收缩，移动较矮边'},
+  {id:'02-03',cat:'02-two-pointers',title:'三数之和',en:'3Sum',diff:'medium',lc:15,desc:'找出所有和为 0 且不重复的三元组。',example:'输入: [-1,0,1,2,-1,-4] → 输出: [[-1,-1,2],[-1,0,1]]',hint:'排序+固定一个+双指针'},
+  {id:'02-04',cat:'02-two-pointers',title:'接雨水',en:'Trapping Rain Water',diff:'hard',lc:42,desc:'给定柱子高度数组，计算下雨后能接多少雨水。',example:'输入: [0,1,0,2,1,0,1,3,2,1,2,1] → 输出: 6',hint:'双指针/单调栈'},
+
+  // ===== 03 滑动窗口 =====
+  {id:'03-01',cat:'03-sliding-window',title:'无重复字符的最长子串',en:'Longest Substring Without Repeating Characters',diff:'medium',lc:3,desc:'找出不含重复字符的最长子串长度。',example:'输入: "abcabcbb" → 输出: 3 ("abc")',hint:'滑动窗口+HashMap记位置'},
+  {id:'03-02',cat:'03-sliding-window',title:'找到字符串中所有字母异位词',en:'Find All Anagrams in a String',diff:'medium',lc:438,desc:'在字符串 s 中找所有 p 的异位词子串的起始索引。',example:'输入: s="cbaebabacd", p="abc" → 输出: [0,6]',hint:'定长窗口+频率数组'},
+
+  // ===== 04 子串 =====
+  {id:'04-01',cat:'04-substring',title:'和为 K 的子数组',en:'Subarray Sum Equals K',diff:'medium',lc:560,desc:'统计和为 k 的连续子数组个数。',example:'输入: nums=[1,1,1], k=2 → 输出: 2',hint:'前缀和+HashMap'},
+  {id:'04-02',cat:'04-substring',title:'滑动窗口最大值',en:'Sliding Window Maximum',diff:'hard',lc:239,desc:'给定数组和窗口大小 k，返回每个窗口的最大值。',example:'输入: nums=[1,3,-1,-3,5,3,6,7], k=3 → 输出: [3,3,5,5,6,7]',hint:'单调递减队列'},
+  {id:'04-03',cat:'04-substring',title:'最小覆盖子串',en:'Minimum Window Substring',diff:'hard',lc:76,desc:'在 s 中找包含 t 所有字符的最小子串。',example:'输入: s="ADOBECODEBANC", t="ABC" → 输出: "BANC"',hint:'变长窗口+need计数'},
+
+  // ===== 05 普通数组 =====
+  {id:'05-01',cat:'05-array',title:'最大子数组和',en:'Maximum Subarray',diff:'medium',lc:53,desc:'找出具有最大和的连续子数组，返回其和。',example:'输入: [-2,1,-3,4,-1,2,1,-5,4] → 输出: 6 ([4,-1,2,1])',hint:'Kadane算法'},
+  {id:'05-02',cat:'05-array',title:'合并区间',en:'Merge Intervals',diff:'medium',lc:56,desc:'合并所有重叠的区间。',example:'输入: [[1,3],[2,6],[8,10],[15,18]] → 输出: [[1,6],[8,10],[15,18]]',hint:'按起点排序+一次扫描'},
+  {id:'05-03',cat:'05-array',title:'轮转数组',en:'Rotate Array',diff:'medium',lc:189,desc:'将数组向右轮转 k 步。',example:'输入: nums=[1,2,3,4,5,6,7], k=3 → 输出: [5,6,7,1,2,3,4]',hint:'三次反转'},
+  {id:'05-04',cat:'05-array',title:'除自身以外数组的乘积',en:'Product of Array Except Self',diff:'medium',lc:238,desc:'返回数组 answer[i] = nums 中除 nums[i] 外其余元素乘积。不能用除法。',example:'输入: [1,2,3,4] → 输出: [24,12,8,6]',hint:'前缀积×后缀积'},
+  {id:'05-05',cat:'05-array',title:'缺失的第一个正数',en:'First Missing Positive',diff:'hard',lc:41,desc:'找出缺失的最小正整数。要求 O(n) O(1)。',example:'输入: [3,4,-1,1] → 输出: 2',hint:'原地哈希'},
+
+  // ===== 06 矩阵 =====
+  {id:'06-01',cat:'06-matrix',title:'矩阵置零',en:'Set Matrix Zeroes',diff:'medium',lc:73,desc:'若某元素为 0，将其行和列全置零。要求 O(1) 空间。',example:'输入: [[1,1,1],[1,0,1],[1,1,1]] → 输出: [[1,0,1],[0,0,0],[1,0,1]]',hint:'首行/首列作标记'},
+  {id:'06-02',cat:'06-matrix',title:'螺旋矩阵',en:'Spiral Matrix',diff:'medium',lc:54,desc:'按顺时针螺旋顺序返回矩阵所有元素。',example:'输入: [[1,2,3],[4,5,6],[7,8,9]] → 输出: [1,2,3,6,9,8,7,4,5]',hint:'四边界收缩'},
+  {id:'06-03',cat:'06-matrix',title:'旋转图像',en:'Rotate Image',diff:'medium',lc:48,desc:'将 n×n 矩阵顺时针旋转 90°，原地操作。',example:'输入: [[1,2,3],[4,5,6],[7,8,9]] → 输出: [[7,4,1],[8,5,2],[9,6,3]]',hint:'转置+水平翻转'},
+  {id:'06-04',cat:'06-matrix',title:'搜索二维矩阵 II',en:'Search a 2D Matrix II',diff:'medium',lc:240,desc:'矩阵每行每列都升序，搜索 target。',example:'输入: matrix=[[1,4,7],[2,5,8],[3,6,9]], target=5 → 输出: true',hint:'从右上角开始'},
+
+  // ===== 07 链表 =====
+  {id:'07-01',cat:'07-linked-list',title:'相交链表',en:'Intersection of Two Linked Lists',diff:'easy',lc:160,desc:'找出两个单链表相交的起始节点。',example:'listA=[4,1,8,4,5], listB=[5,6,1,8,4,5] → 相交于 8',hint:'双指针消除长度差'},
+  {id:'07-02',cat:'07-linked-list',title:'反转链表',en:'Reverse Linked List',diff:'easy',lc:206,desc:'反转单链表。',example:'输入: 1→2→3→4→5 → 输出: 5→4→3→2→1',hint:'三指针/递归'},
+  {id:'07-03',cat:'07-linked-list',title:'回文链表',en:'Palindrome Linked List',diff:'easy',lc:234,desc:'判断链表是否为回文。',example:'输入: 1→2→2→1 → 输出: true',hint:'快慢指针+反转后半段'},
+  {id:'07-04',cat:'07-linked-list',title:'环形链表',en:'Linked List Cycle',diff:'easy',lc:141,desc:'判断链表是否有环。',example:'输入: 3→2→0→-4→2... → 输出: true',hint:'快慢指针'},
+  {id:'07-05',cat:'07-linked-list',title:'环形链表 II',en:'Linked List Cycle II',diff:'medium',lc:142,desc:'找到环的入口节点。',example:'输入: 3→2→0→-4→2... → 输出: 节点 2',hint:'Floyd判圈+数学'},
+  {id:'07-06',cat:'07-linked-list',title:'合并两个有序链表',en:'Merge Two Sorted Lists',diff:'easy',lc:21,desc:'合并两个升序链表为一个升序链表。',example:'1→2→4, 1→3→4 → 1→1→2→3→4→4',hint:'归并+dummy头'},
+  {id:'07-07',cat:'07-linked-list',title:'两数相加',en:'Add Two Numbers',diff:'medium',lc:2,desc:'两个非空链表逆序存储数字，相加返回新链表。',example:'2→4→3 + 5→6→4 → 7→0→8 (342+465=807)',hint:'模拟竖式加法+carry'},
+  {id:'07-08',cat:'07-linked-list',title:'删除链表倒数第 N 个结点',en:'Remove Nth Node From End',diff:'medium',lc:19,desc:'删除链表倒数第 n 个节点。',example:'1→2→3→4→5, n=2 → 1→2→3→5',hint:'快慢指针间隔n'},
+  {id:'07-09',cat:'07-linked-list',title:'两两交换链表中的节点',en:'Swap Nodes in Pairs',diff:'medium',lc:24,desc:'交换每两个相邻节点。',example:'1→2→3→4 → 2→1→4→3',hint:'维护prev连接'},
+  {id:'07-10',cat:'07-linked-list',title:'K个一组翻转链表',en:'Reverse Nodes in k-Group',diff:'hard',lc:25,desc:'每 k 个节点一组翻转。',example:'1→2→3→4→5, k=2 → 2→1→4→3→5',hint:'分组+反转'},
+  {id:'07-11',cat:'07-linked-list',title:'随机链表的复制',en:'Copy List with Random Pointer',diff:'medium',lc:138,desc:'深拷贝含 random 指针的链表。',example:'节点有 next 和 random → 深拷贝',hint:'HashMap/交错插入'},
+  {id:'07-12',cat:'07-linked-list',title:'排序链表',en:'Sort List',diff:'medium',lc:148,desc:'将链表排序，要求 O(n log n)。',example:'4→2→1→3 → 1→2→3→4',hint:'归并排序+快慢找中点'},
+  {id:'07-13',cat:'07-linked-list',title:'合并K个升序链表',en:'Merge k Sorted Lists',diff:'hard',lc:23,desc:'合并 k 个有序链表。',example:'[1→4→5, 1→3→4, 2→6] → 1→1→2→3→4→4→5→6',hint:'小顶堆/分治归并'},
+  {id:'07-14',cat:'07-linked-list',title:'LRU缓存',en:'LRU Cache',diff:'medium',lc:146,desc:'实现 LRU 缓存，get/put O(1)。',example:'LRUCache(2); put(1,1); put(2,2); get(1)→1; put(3,3); get(2)→-1',hint:'HashMap+双向链表'},
+
+  // ===== 08 二叉树 =====
+  {id:'08-01',cat:'08-binary-tree',title:'二叉树的中序遍历',en:'Binary Tree Inorder Traversal',diff:'easy',lc:94,desc:'返回二叉树中序遍历结果。',example:'1→null→2→3 → [1,3,2]',hint:'栈模拟/递归'},
+  {id:'08-02',cat:'08-binary-tree',title:'二叉树的最大深度',en:'Maximum Depth of Binary Tree',diff:'easy',lc:104,desc:'返回二叉树最大深度。',example:'[3,9,20,null,null,15,7] → 3',hint:'DFS/BFS'},
+  {id:'08-03',cat:'08-binary-tree',title:'翻转二叉树',en:'Invert Binary Tree',diff:'easy',lc:226,desc:'翻转二叉树（镜像）。',example:'[4,2,7,1,3,6,9] → [4,7,2,9,6,3,1]',hint:'递归交换左右'},
+  {id:'08-04',cat:'08-binary-tree',title:'对称二叉树',en:'Symmetric Tree',diff:'easy',lc:101,desc:'判断二叉树是否轴对称。',example:'[1,2,2,3,4,4,3] → true',hint:'递归比较镜像位置'},
+  {id:'08-05',cat:'08-binary-tree',title:'二叉树的直径',en:'Diameter of Binary Tree',diff:'easy',lc:543,desc:'返回二叉树直径（任意两节点最长路径）。',example:'[1,2,3,4,5] → 3 ([4,2,1,3] 或 [5,2,1,3])',hint:'DFS同时计算深度和直径'},
+  {id:'08-06',cat:'08-binary-tree',title:'二叉树的层序遍历',en:'Binary Tree Level Order Traversal',diff:'medium',lc:102,desc:'按层返回节点值。',example:'[3,9,20,null,null,15,7] → [[3],[9,20],[15,7]]',hint:'BFS队列+层大小'},
+  {id:'08-07',cat:'08-binary-tree',title:'将有序数组转换为二叉搜索树',en:'Convert Sorted Array to BST',diff:'easy',lc:108,desc:'将升序数组转为平衡二叉搜索树。',example:'[-10,-3,0,5,9] → [0,-3,9,-10,null,5]',hint:'二分递归建树'},
+  {id:'08-08',cat:'08-binary-tree',title:'验证二叉搜索树',en:'Validate BST',diff:'medium',lc:98,desc:'判断是否为有效二叉搜索树。',example:'[2,1,3] → true; [5,1,4,null,null,3,6] → false',hint:'递归传上下界/中序验证'},
+  {id:'08-09',cat:'08-binary-tree',title:'二叉搜索树中第K小的元素',en:'Kth Smallest in BST',diff:'medium',lc:230,desc:'找 BST 中第 k 小的元素。',example:'[3,1,4,null,2], k=1 → 1',hint:'中序遍历计数'},
+  {id:'08-10',cat:'08-binary-tree',title:'二叉树的右视图',en:'Binary Tree Right Side View',diff:'medium',lc:199,desc:'从右侧看二叉树，返回能看到的节点。',example:'[1,2,3,null,5,null,4] → [1,3,4]',hint:'BFS每层最后一个'},
+  {id:'08-11',cat:'08-binary-tree',title:'二叉树展开为链表',en:'Flatten Binary Tree to Linked List',diff:'medium',lc:114,desc:'将二叉树展开为右指针的单链表。',example:'[1,2,5,3,4,null,6] → [1,null,2,null,3,null,4,null,5,null,6]',hint:'后序/迭代'},
+  {id:'08-12',cat:'08-binary-tree',title:'从前序与中序遍历构造二叉树',en:'Construct Binary Tree from Pre/Inorder',diff:'medium',lc:105,desc:'给定前序和中序遍历，构造二叉树。',example:'preorder=[3,9,20,15,7], inorder=[9,3,15,20,7] → [3,9,20,null,null,15,7]',hint:'前序找根+中序分左右'},
+  {id:'08-13',cat:'08-binary-tree',title:'路径总和 III',en:'Path Sum III',diff:'medium',lc:437,desc:'找出路径和等于 target 的路径数（不要求从根开始/到叶子结束）。',example:'[10,5,-3,3,2,null,11,3,-2,null,1], target=8 → 3',hint:'前缀和+DFS+HashMap'},
+  {id:'08-14',cat:'08-binary-tree',title:'二叉树的最近公共祖先',en:'Lowest Common Ancestor',diff:'medium',lc:236,desc:'找两个节点的最近公共祖先。',example:'[3,5,1,6,2,0,8,null,null,7,4], p=5, q=1 → 3',hint:'递归左右查找'},
+  {id:'08-15',cat:'08-binary-tree',title:'二叉树中的最大路径和',en:'Binary Tree Maximum Path Sum',diff:'hard',lc:124,desc:'找最大路径和（不要求经过根）。',example:'[-10,9,20,null,null,15,7] → 42 (15→20→7)',hint:'DFS返回单边贡献+更新全局'},
+
+  // ===== 09 图论 =====
+  {id:'09-01',cat:'09-graph',title:'岛屿数量',en:'Number of Islands',diff:'medium',lc:200,desc:'二维网格中 1 为陆地 0 为水，统计岛屿数量（连通块）。',example:'[["1","1","0"],["1","0","0"],["0","0","1"]] → 2',hint:'DFS沉岛/BFS'},
+  {id:'09-02',cat:'09-graph',title:'腐烂的橘子',en:'Rotting Oranges',diff:'medium',lc:994,desc:'每分钟腐烂橘子向四方向传播，返回全部腐烂所需分钟数或 -1。',example:'[[2,1,1],[1,1,0],[0,1,1]] → 4',hint:'BFS多源扩散'},
+  {id:'09-03',cat:'09-graph',title:'课程表',en:'Course Schedule',diff:'medium',lc:207,desc:'numCourses 门课和 prerequisites 先修关系，判断能否完成。',example:'numCourses=2, pre=[[1,0]] → true; [[1,0],[0,1]] → false',hint:'拓扑排序/判环'},
+  {id:'09-04',cat:'09-graph',title:'实现Trie(前缀树)',en:'Implement Trie',diff:'medium',lc:208,desc:'实现前缀树的 insert/search/startsWith。',example:'insert("apple"); search("apple")→true; search("app")→false; startsWith("app")→true',hint:'26叉树/children字典'},
+
+  // ===== 10 回溯 =====
+  {id:'10-01',cat:'10-backtracking',title:'全排列',en:'Permutations',diff:'medium',lc:46,desc:'返回不含重复数字数组的所有排列。',example:'[1,2,3] → [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]',hint:'used数组+回溯'},
+  {id:'10-02',cat:'10-backtracking',title:'子集',en:'Subsets',diff:'medium',lc:78,desc:'返回不含重复数字数组的所有子集。',example:'[1,2,3] → [[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]',hint:'选/不选+回溯'},
+  {id:'10-03',cat:'10-backtracking',title:'电话号码的字母组合',en:'Letter Combinations of Phone Number',diff:'medium',lc:17,desc:'九宫格数字→字母映射，返回所有组合。',example:'"23" → ["ad","ae","af","bd","be","bf","cd","ce","cf"]',hint:'回溯/队列迭代'},
+  {id:'10-04',cat:'10-backtracking',title:'组合总和',en:'Combination Sum',diff:'medium',lc:39,desc:'找出所有和为 target 的组合，元素可重复使用。',example:'candidates=[2,3,6,7], target=7 → [[2,2,3],[7]]',hint:'回溯+start去重'},
+  {id:'10-05',cat:'10-backtracking',title:'括号生成',en:'Generate Parentheses',diff:'medium',lc:22,desc:'生成 n 对括号的所有有效组合。',example:'n=3 → ["((()))","(()())","(())()","()(())","()()()"]',hint:'回溯+左右括号计数'},
+  {id:'10-06',cat:'10-backtracking',title:'单词搜索',en:'Word Search',diff:'medium',lc:79,desc:'在二维网格中搜索给定单词（相邻字母连接）。',example:'board=[["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word="ABCCED" → true',hint:'DFS+回溯+标记'},
+  {id:'10-07',cat:'10-backtracking',title:'分割回文串',en:'Palindrome Partitioning',diff:'medium',lc:131,desc:'将字符串分割为回文子串，返回所有可能方案。',example:'"aab" → [["a","a","b"],["aa","b"]]',hint:'回溯+回文检查'},
+  {id:'10-08',cat:'10-backtracking',title:'N皇后',en:'N-Queens',diff:'hard',lc:51,desc:'N×N 棋盘放 N 个皇后不互相攻击，返回所有方案。',example:'n=4 → [[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]',hint:'回溯+对角线检查'},
+
+  // ===== 11 二分查找 =====
+  {id:'11-01',cat:'11-binary-search',title:'搜索插入位置',en:'Search Insert Position',diff:'easy',lc:35,desc:'给定有序数组和 target，返回索引或应插入位置。',example:'[1,3,5,6], 5 → 2; [1,3,5,6], 2 → 1',hint:'二分找左边界'},
+  {id:'11-02',cat:'11-binary-search',title:'搜索二维矩阵',en:'Search a 2D Matrix',diff:'medium',lc:74,desc:'矩阵每行有序且每行首元素>上行尾元素，搜索 target。',example:'[[1,3,5,7],[10,11,16,20],[23,30,34,60]], target=3 → true',hint:'二分+坐标映射'},
+  {id:'11-03',cat:'11-binary-search',title:'在排序数组中查找第一个和最后一个位置',en:'Find First and Last Position',diff:'medium',lc:34,desc:'在有序数组中找 target 的起始和结束位置。',example:'[5,7,7,8,8,10], 8 → [3,4]',hint:'两次二分找边界'},
+  {id:'11-04',cat:'11-binary-search',title:'搜索旋转排序数组',en:'Search in Rotated Sorted Array',diff:'medium',lc:33,desc:'在旋转后的有序数组中搜索 target。O(log n)。',example:'[4,5,6,7,0,1,2], 0 → 4',hint:'二分+判断哪边有序'},
+  {id:'11-05',cat:'11-binary-search',title:'寻找旋转排序数组中的最小值',en:'Find Min in Rotated Sorted Array',diff:'medium',lc:153,desc:'在旋转后的有序数组中找最小值。',example:'[3,4,5,1,2] → 1',hint:'二分比较nums[mid]和nums[right]'},
+  {id:'11-06',cat:'11-binary-search',title:'寻找两个正序数组的中位数',en:'Median of Two Sorted Arrays',diff:'hard',lc:4,desc:'两个正序数组找中位数，要求 O(log(m+n))。',example:'[1,3], [2] → 2.0; [1,2], [3,4] → 2.5',hint:'二分partition较短的数组'},
+
+  // ===== 12 栈 =====
+  {id:'12-01',cat:'12-stack',title:'有效的括号',en:'Valid Parentheses',diff:'easy',lc:20,desc:'判断含 ()[]{}/ 的字符串是否有效。',example:'"()[]{}" → true; "(]" → false',hint:'栈匹配'},
+  {id:'12-02',cat:'12-stack',title:'最小栈',en:'Min Stack',diff:'medium',lc:155,desc:'实现能在 O(1) 获取最小值的栈。',example:'push(-2,0,-3); getMin()→-3; pop(); top()→0; getMin()→-2',hint:'辅助栈/差值法'},
+  {id:'12-03',cat:'12-stack',title:'字符串解码',en:'Decode String',diff:'medium',lc:394,desc:'解码 k[encoded_string] 格式的字符串。',example:'"3[a]2[bc]" → "aaabcbc"; "3[a2[c]]" → "accaccacc"',hint:'双栈:数字栈+字符串栈'},
+  {id:'12-04',cat:'12-stack',title:'每日温度',en:'Daily Temperatures',diff:'medium',lc:739,desc:'返回等待几天才能遇到更高温度。',example:'[73,74,75,71,69,72,76,73] → [1,1,4,2,1,1,0,0]',hint:'单调递减栈'},
+  {id:'12-05',cat:'12-stack',title:'柱状图中最大的矩形',en:'Largest Rectangle in Histogram',diff:'hard',lc:84,desc:'求柱状图中最大矩形面积。',example:'[2,1,5,6,2,3] → 10 (5×2)',hint:'单调递增栈'},
+
+  // ===== 13 堆 =====
+  {id:'13-01',cat:'13-heap',title:'数组中第K个最大元素',en:'Kth Largest Element',diff:'medium',lc:215,desc:'找数组第 k 个最大元素。',example:'[3,2,1,5,6,4], k=2 → 5',hint:'快速选择/小顶堆'},
+  {id:'13-02',cat:'13-heap',title:'前K个高频元素',en:'Top K Frequent Elements',diff:'medium',lc:347,desc:'返回出现频率前 k 高的元素。',example:'[1,1,1,2,2,3], k=2 → [1,2]',hint:'小顶堆/桶排序'},
+  {id:'13-03',cat:'13-heap',title:'数据流的中位数',en:'Find Median from Data Stream',diff:'hard',lc:295,desc:'设计支持 addNum 和 findMedian 的数据结构。',example:'add(1); add(2); find()→1.5; add(3); find()→2.0',hint:'双堆:大顶+小顶'},
+
+  // ===== 14 贪心算法 =====
+  {id:'14-01',cat:'14-greedy',title:'买卖股票的最佳时机',en:'Best Time to Buy and Sell Stock',diff:'easy',lc:121,desc:'只交易一次，求最大利润。',example:'[7,1,5,3,6,4] → 5 (1买入6卖出)',hint:'维护最低价格'},
+  {id:'14-02',cat:'14-greedy',title:'跳跃游戏',en:'Jump Game',diff:'medium',lc:55,desc:'判断能否到达最后一个位置。',example:'[2,3,1,1,4] → true; [3,2,1,0,4] → false',hint:'贪心维护farthest'},
+  {id:'14-03',cat:'14-greedy',title:'跳跃游戏 II',en:'Jump Game II',diff:'medium',lc:45,desc:'最少跳跃次数到达终点。',example:'[2,3,1,1,4] → 2',hint:'BFS思想+end标记层边界'},
+  {id:'14-04',cat:'14-greedy',title:'划分字母区间',en:'Partition Labels',diff:'medium',lc:763,desc:'划分字符串让每个字母最多出现在一个片段。',example:'"ababcbacadefegdehijhklij" → [9,7,8]',hint:'记录最后出现位置'},
+
+  // ===== 15 动态规划 =====
+  {id:'15-01',cat:'15-dp',title:'爬楼梯',en:'Climbing Stairs',diff:'easy',lc:70,desc:'爬 n 阶楼梯，每次 1 或 2 阶，多少种方法。',example:'n=3 → 3 (1+1+1, 1+2, 2+1)',hint:'斐波那契/滚动数组'},
+  {id:'15-02',cat:'15-dp',title:'杨辉三角',en:'Pascal Triangle',diff:'easy',lc:118,desc:'生成杨辉三角前 n 行。',example:'n=5 → [[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1]]',hint:'dp[i][j]=dp[i-1][j-1]+dp[i-1][j]'},
+  {id:'15-03',cat:'15-dp',title:'打家劫舍',en:'House Robber',diff:'medium',lc:198,desc:'不能偷相邻房屋，求最大金额。',example:'[1,2,3,1] → 4 (偷1+3); [2,7,9,3,1] → 12 (2+9+1)',hint:'dp[i]=max(dp[i-1],dp[i-2]+nums[i])'},
+  {id:'15-04',cat:'15-dp',title:'完全平方数',en:'Perfect Squares',diff:'medium',lc:279,desc:'求 n 最少由几个完全平方数相加。',example:'12 → 3 (4+4+4); 13 → 2 (4+9)',hint:'dp[i]=min(dp[i-j²]+1)'},
+  {id:'15-05',cat:'15-dp',title:'零钱兑换',en:'Coin Change',diff:'medium',lc:322,desc:'用最少硬币凑出 amount，每种硬币无限。',example:'coins=[1,2,5], amount=11 → 3 (5+5+1)',hint:'完全背包dp'},
+  {id:'15-06',cat:'15-dp',title:'单词拆分',en:'Word Break',diff:'medium',lc:139,desc:'判断字符串能否由字典中的单词拼接。',example:'s="leetcode", wordDict=["leet","code"] → true',hint:'dp[i]检查分割点'},
+  {id:'15-07',cat:'15-dp',title:'最长递增子序列',en:'Longest Increasing Subsequence',diff:'medium',lc:300,desc:'找最长严格递增子序列长度。',example:'[10,9,2,5,3,7,101,18] → 4 ([2,3,7,101])',hint:'dp+二分/patience sorting'},
+  {id:'15-08',cat:'15-dp',title:'乘积最大子数组',en:'Maximum Product Subarray',diff:'medium',lc:152,desc:'找乘积最大的连续子数组。',example:'[2,3,-2,4] → 6 ([2,3]); [-2,0,-1] → 0',hint:'同时维护max和min'},
+  {id:'15-09',cat:'15-dp',title:'分割等和子集',en:'Partition Equal Subset Sum',diff:'medium',lc:416,desc:'能否将数组分成两个和相等的子集。',example:'[1,5,11,5] → true ([1,5,5]和[11])',hint:'0-1背包'},
+  {id:'15-10',cat:'15-dp',title:'最长有效括号',en:'Longest Valid Parentheses',diff:'hard',lc:32,desc:'找最长有效括号子串长度。',example:'"(()" → 2; ")()())" → 4',hint:'dp/栈/双向扫描'},
+  {id:'15-11',cat:'15-dp',title:'打家劫舍 III',en:'House Robber III',diff:'medium',lc:337,desc:'二叉树结构，不能偷直接相连节点，求最大金额。备注:此题也属树类。',example:'[3,2,3,null,3,null,1] → 7 (3+3+1)',hint:'树形DP:dp[node]=[偷,不偷]'},
+
+  // ===== 16 多维动态规划 =====
+  {id:'16-01',cat:'16-multi-dp',title:'不同路径',en:'Unique Paths',diff:'medium',lc:62,desc:'m×n 网格从左上到右下，只能右/下，有多少路径。',example:'m=3,n=7 → 28',hint:'dp[i][j]=dp[i-1][j]+dp[i][j-1]'},
+  {id:'16-02',cat:'16-multi-dp',title:'最小路径和',en:'Minimum Path Sum',diff:'medium',lc:64,desc:'m×n 网格从左上到右下，找路径上数字和最小。',example:'[[1,3,1],[1,5,1],[4,2,1]] → 7 (1→3→1→1→1)',hint:'dp取min'},
+  {id:'16-03',cat:'16-multi-dp',title:'最长回文子串',en:'Longest Palindromic Substring',diff:'medium',lc:5,desc:'找最长回文子串。',example:'"babad" → "bab" 或 "aba"; "cbbd" → "bb"',hint:'中心扩展/DP'},
+  {id:'16-04',cat:'16-multi-dp',title:'最长公共子序列',en:'Longest Common Subsequence',diff:'medium',lc:1143,desc:'找两个字符串的最长公共子序列长度。',example:'text1="abcde", text2="ace" → 3 ("ace")',hint:'二维DP'},
+  {id:'16-05',cat:'16-multi-dp',title:'编辑距离',en:'Edit Distance',diff:'medium',lc:72,desc:'word1 → word2 的最少操作数（增/删/改）。',example:'word1="horse", word2="ros" → 3',hint:'dp[i][j]三方向取min'},
+
+  // ===== 17 技巧 =====
+  {id:'17-01',cat:'17-tricks',title:'只出现一次的数字',en:'Single Number',diff:'easy',lc:136,desc:'数组除一个元素出现一次外其余都出现两次，找出它。O(n)O(1)。',example:'[2,2,1] → 1; [4,1,2,1,2] → 4',hint:'异或运算'},
+  {id:'17-02',cat:'17-tricks',title:'多数元素',en:'Majority Element',diff:'easy',lc:169,desc:'找出现次数 > n/2 的元素。',example:'[3,2,3] → 3; [2,2,1,1,1,2,2] → 2',hint:'Boyer-Moore投票'},
+  {id:'17-03',cat:'17-tricks',title:'颜色分类',en:'Sort Colors',diff:'medium',lc:75,desc:'给 0/1/2 排序，原地一遍扫描。',example:'[2,0,2,1,1,0] → [0,0,1,1,2,2]',hint:'三路partition'},
+  {id:'17-04',cat:'17-tricks',title:'下一个排列',en:'Next Permutation',diff:'medium',lc:31,desc:'将数组原地变为字典序下一个更大的排列。',example:'[1,2,3] → [1,3,2]; [3,2,1] → [1,2,3]',hint:'找降序对+交换+反转'},
+  {id:'17-05',cat:'17-tricks',title:'寻找重复数',en:'Find the Duplicate Number',diff:'medium',lc:287,desc:'n+1 长度数组元素∈[1,n]，有一个重复数，找出来。O(1)空间。',example:'[1,3,4,2,2] → 2; [3,1,3,4,2] → 3',hint:'Floyd判圈/二分统计'}
+];
+
+const CATEGORIES = [
+  {id:'all',name:'全部'},
+  {id:'01-hash',name:'哈希'},
+  {id:'02-two-pointers',name:'双指针'},
+  {id:'03-sliding-window',name:'滑动窗口'},
+  {id:'04-substring',name:'子串'},
+  {id:'05-array',name:'普通数组'},
+  {id:'06-matrix',name:'矩阵'},
+  {id:'07-linked-list',name:'链表'},
+  {id:'08-binary-tree',name:'二叉树'},
+  {id:'09-graph',name:'图论'},
+  {id:'10-backtracking',name:'回溯'},
+  {id:'11-binary-search',name:'二分查找'},
+  {id:'12-stack',name:'栈'},
+  {id:'13-heap',name:'堆'},
+  {id:'14-greedy',name:'贪心算法'},
+  {id:'15-dp',name:'动态规划'},
+  {id:'16-multi-dp',name:'多维动态规划'},
+  {id:'17-tricks',name:'技巧'}
+];
+
+// ==================== 存储引擎 ====================
+const STORAGE_KEY = 'lc-hot100-progress';
+
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch(e) { return {}; }
+}
+function saveProgress(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function getToday() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// record: { passDates: ["2026-04-28","2026-04-29",...], lastSeen: "2026-04-28" }
+function isMastered(record) {
+  return record && record.passDates && record.passDates.length >= 3;
+}
+function passedToday(record) {
+  return record && record.passDates && record.passDates.includes(getToday());
+}
+function seenToday(record) {
+  return record && record.lastSeen === getToday();
+}
+
+// ==================== 选题算法 ====================
+function getEligibleProblems(catFilter) {
+  const progress = loadProgress();
+  const today = getToday();
+
+  return PROBLEMS.filter(p => {
+    if (catFilter !== 'all' && p.cat !== catFilter) return false;
+
+    const rec = progress[p.id];
+    // 已掌握（3天通过）→ 不出现
+    if (isMastered(rec)) return false;
+    // 今天已通过 → 不出现
+    if (passedToday(rec)) return false;
+
+    return true;
+  });
+}
+
+function pickProblem(catFilter) {
+  const eligible = getEligibleProblems(catFilter);
+  if (eligible.length === 0) return null;
+
+  // 优先选未看过的，其次随机
+  const progress = loadProgress();
+  const unseen = eligible.filter(p => !progress[p.id]);
+  const pool = unseen.length > 0 ? unseen : eligible;
+
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ==================== 渲染 ====================
+let currentProblem = null;
+let currentCatFilter = 'all';
+
+function initCategoryFilter() {
+  const container = document.getElementById('category-filter');
+  container.innerHTML = CATEGORIES.map(c =>
+    `<button class="cat-chip${c.id==='all'?' active':''}" data-cat="${c.id}" onclick="selectCategory('${c.id}')">${c.name}</button>`
+  ).join('');
+}
+
+function selectCategory(catId) {
+  currentCatFilter = catId;
+  document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.dataset.cat === catId));
+  showNextProblem();
+}
+
+function showNextProblem() {
+  currentProblem = pickProblem(currentCatFilter);
+
+  if (!currentProblem) {
+    document.getElementById('empty-state').style.display = 'block';
+    document.getElementById('problem-area').style.display = 'none';
+    updateStats();
+    return;
+  }
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('problem-area').style.display = 'block';
+  document.getElementById('solution-panel').classList.remove('show');
+
+  const p = currentProblem;
+  const progress = loadProgress();
+  const rec = progress[p.id] || { passDates: [], lastSeen: '' };
+
+  document.getElementById('prob-number').textContent = `#${p.lc}. ${p.en}`;
+  document.getElementById('prob-title').textContent = p.title;
+  const diffEl = document.getElementById('prob-diff');
+  diffEl.textContent = p.diff === 'easy' ? '简单' : p.diff === 'medium' ? '中等' : '困难';
+  diffEl.className = 'difficulty ' + (p.diff === 'easy' ? 'diff-easy' : p.diff === 'medium' ? 'diff-medium' : 'diff-hard');
+
+  const catName = CATEGORIES.find(c => c.id === p.cat)?.name || p.cat;
+  document.getElementById('prob-tags').innerHTML = `<span class="tag">${catName}</span>`;
+
+  const passCount = rec.passDates.length;
+  document.getElementById('prob-progress').innerHTML = `通过进度: <span>${passCount}/3</span> 次（需要 3 个不同天数）`;
+
+  document.getElementById('prob-desc').textContent = p.desc;
+  document.getElementById('prob-example').innerHTML = `<strong>示例:</strong> ${p.example}`;
+  document.getElementById('code-editor').value = '';
+
+  updateStats();
+  renderHistory();
+}
+
+function handlePass() {
+  if (!currentProblem) return;
+  const progress = loadProgress();
+  const today = getToday();
+  if (!progress[currentProblem.id]) {
+    progress[currentProblem.id] = { passDates: [], lastSeen: '' };
+  }
+  const rec = progress[currentProblem.id];
+  if (!rec.passDates.includes(today)) {
+    rec.passDates.push(today);
+  }
+  rec.lastSeen = today;
+  saveProgress(progress);
+  showNextProblem();
+}
+
+function handleFail() {
+  if (!currentProblem) return;
+  const progress = loadProgress();
+  const today = getToday();
+  if (!progress[currentProblem.id]) {
+    progress[currentProblem.id] = { passDates: [], lastSeen: '' };
+  }
+  progress[currentProblem.id].lastSeen = today;
+  saveProgress(progress);
+
+  // Show solution
+  const panel = document.getElementById('solution-panel');
+  panel.classList.add('show');
+  document.getElementById('solution-brute').textContent = '// 请参考 solutions/' + currentProblem.cat + '/' + currentProblem.id + '.py 中的暴力解法';
+  document.getElementById('solution-optimal').textContent = '// 请参考 solutions/' + currentProblem.cat + '/' + currentProblem.id + '.py 中的最优解法';
+}
+
+function updateStats() {
+  const progress = loadProgress();
+  const today = getToday();
+  let mastered = 0, todayPass = 0, totalPass = 0;
+  Object.values(progress).forEach(rec => {
+    if (isMastered(rec)) mastered++;
+    if (passedToday(rec)) todayPass++;
+    totalPass += (rec.passDates || []).length;
+  });
+  document.getElementById('stat-mastered').textContent = mastered;
+  document.getElementById('stat-today').textContent = todayPass;
+  document.getElementById('stat-total').textContent = totalPass;
+}
+
+function renderHistory() {
+  const progress = loadProgress();
+  const today = getToday();
+  const items = [];
+  Object.entries(progress).forEach(([id, rec]) => {
+    if (rec.passDates && rec.passDates.includes(today)) {
+      const p = PROBLEMS.find(x => x.id === id);
+      if (p) items.push(`<div class="history-item">${p.title} — 通过了第 ${rec.passDates.length}/3 次</div>`);
+    }
+  });
+  if (items.length === 0) {
+    items.push('<div class="history-item" style="color:var(--text2)">今天还没有通过的题目</div>');
+  }
+  document.getElementById('history-list').innerHTML = items.join('');
+}
+
+function resetProgress() {
+  if (confirm('确定要重置所有进度吗？此操作不可恢复。')) {
+    localStorage.removeItem(STORAGE_KEY);
+    showNextProblem();
+  }
+}
+
+// ==================== 键盘快捷键 & 初始化 ====================
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'Enter') {
+    e.preventDefault();
+    handlePass();
+  }
+  if (e.ctrlKey && e.key === 'f') {
+    e.preventDefault();
+    handleFail();
+  }
+  if (e.ctrlKey && e.key === 'n') {
+    e.preventDefault();
+    showNextProblem();
+  }
+});
+
+// Tab key support in textarea
+document.addEventListener('keydown', e => {
+  if (e.target.id === 'code-editor' && e.key === 'Tab') {
+    e.preventDefault();
+    const ta = e.target;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    ta.value = ta.value.substring(0, start) + '    ' + ta.value.substring(end);
+    ta.selectionStart = ta.selectionEnd = start + 4;
+  }
+});
+
+initCategoryFilter();
+showNextProblem();
+</script>
+</body>
+</html>
